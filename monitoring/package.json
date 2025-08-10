@@ -1,0 +1,37 @@
+{
+  "name": "commerceai-health-monitor",
+  "version": "1.0.0",
+  "description": "Health monitoring service for CommerceAI Pro platform",
+  "main": "health-monitor.js",
+  "scripts": {
+    "start": "node health-monitor.js",
+    "dev": "nodemon health-monitor.js",
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "winston": "^3.11.0",
+    "node-cron": "^3.0.3",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0",
+    "eslint": "^8.52.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "monitoring",
+    "health-check",
+    "microservices",
+    "commerceai"
+  ],
+  "author": "CommerceAI Pro Team",
+  "license": "MIT"
+}

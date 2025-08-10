@@ -1,0 +1,941 @@
+openapi: 3.0.3
+info:
+  title: CommerceAI Pro API
+  description: |
+    API Gateway pour la plateforme CommerceAI Pro - Intelligence Artificielle pour E-commerce
+    
+    Cette API fournit un accès complet aux fonctionnalités de la plateforme :
+    - Authentification et gestion des utilisateurs
+    - Gestion des organisations et rôles
+    - Support client et chat en temps réel
+    - Analytics et métriques
+    - Intégrations avec les plateformes e-commerce
+    - Agents IA spécialisés
+    
+    ## Authentification
+    
+    L'API utilise l'authentification JWT. Incluez le token dans l'en-tête Authorization :
+    ```
+    Authorization: Bearer <votre-token-jwt>
+    ```
+    
+    ## Codes de statut
+    
+    - `200` - Succès
+    - `201` - Créé avec succès
+    - `400` - Erreur de validation
+    - `401` - Non authentifié
+    - `403` - Accès refusé
+    - `404` - Ressource non trouvée
+    - `429` - Limite de taux dépassée
+    - `500` - Erreur serveur
+    
+  version: 1.0.0
+  contact:
+    name: Support CommerceAI Pro
+    email: support@commerceai-pro.com
+    url: https://commerceai-pro.com
+  license:
+    name: Propriétaire
+    url: https://commerceai-pro.com/license
+
+servers:
+  - url: https://api.commerceai-pro.com
+    description: Production
+  - url: https://staging-api.commerceai-pro.com
+    description: Staging
+  - url: http://localhost:4000
+    description: Développement local
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Erreur lors de l'opération"
+        error:
+          type: string
+          example: "Détails de l'erreur"
+        timestamp:
+          type: string
+          format: date-time
+    
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Opération réussie"
+        data:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+    
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "user_123"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        role:
+          type: string
+          enum: [user, admin, support]
+          example: "user"
+        organizationId:
+          type: string
+          example: "org_123"
+        isEmailVerified:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        lastLoginAt:
+          type: string
+          format: date-time
+    
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "org_123"
+        name:
+          type: string
+          example: "Mon Entreprise"
+        domain:
+          type: string
+          example: "monentreprise.com"
+        plan:
+          type: string
+          enum: [starter, professional, enterprise]
+          example: "professional"
+        settings:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+    
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "ticket_123"
+        number:
+          type: string
+          example: "TICK-2024-001"
+        title:
+          type: string
+          example: "Problème de connexion"
+        description:
+          type: string
+          example: "Je n'arrive pas à me connecter à mon compte"
+        category:
+          type: string
+          enum: [technical, billing, general, feature_request]
+          example: "technical"
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+          example: "medium"
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+          example: "open"
+        userId:
+          type: string
+          example: "user_123"
+        assignedTo:
+          type: string
+          example: "agent_456"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    ChatSession:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "chat_123"
+        userId:
+          type: string
+          example: "user_123"
+        agentId:
+          type: string
+          example: "agent_456"
+        status:
+          type: string
+          enum: [waiting, active, ended]
+          example: "active"
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+        satisfactionRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Authentification
+  /api/auth/register:
+    post:
+      tags:
+        - Authentification
+      summary: Inscription d'un nouvel utilisateur
+      description: Créer un nouveau compte utilisateur
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - firstName
+                - lastName
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  minLength: 8
+                  example: "motdepasse123"
+                firstName:
+                  type: string
+                  example: "John"
+                lastName:
+                  type: string
+                  example: "Doe"
+                organizationName:
+                  type: string
+                  example: "Mon Entreprise"
+      responses:
+        '201':
+          description: Utilisateur créé avec succès
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email déjà utilisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/auth/login:
+    post:
+      tags:
+        - Authentification
+      summary: Connexion utilisateur
+      description: Authentifier un utilisateur et obtenir un token JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "motdepasse123"
+                rememberMe:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                          user:
+                            $ref: '#/components/schemas/User'
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentification
+      summary: Déconnexion utilisateur
+      description: Invalider le token JWT actuel
+      responses:
+        '200':
+          description: Déconnexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+  
+  /api/auth/me:
+    get:
+      tags:
+        - Authentification
+      summary: Profil utilisateur actuel
+      description: Récupérer les informations de l'utilisateur connecté
+      responses:
+        '200':
+          description: Profil utilisateur
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Support
+  /api/support/tickets:
+    get:
+      tags:
+        - Support
+      summary: Liste des tickets de support
+      description: Récupérer tous les tickets de l'utilisateur connecté
+      parameters:
+        - name: status
+          in: query
+          description: Filtrer par statut
+          schema:
+            type: string
+            enum: [open, in_progress, resolved, closed]
+        - name: category
+          in: query
+          description: Filtrer par catégorie
+          schema:
+            type: string
+            enum: [technical, billing, general, feature_request]
+        - name: page
+          in: query
+          description: Numéro de page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Liste des tickets
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          tickets:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Ticket'
+                          pagination:
+                            type: object
+                            properties:
+                              page:
+                                type: integer
+                              limit:
+                                type: integer
+                              total:
+                                type: integer
+                              pages:
+                                type: integer
+    
+    post:
+      tags:
+        - Support
+      summary: Créer un nouveau ticket
+      description: Créer un ticket de support
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - category
+              properties:
+                title:
+                  type: string
+                  example: "Problème de connexion"
+                description:
+                  type: string
+                  example: "Je n'arrive pas à me connecter à mon compte"
+                category:
+                  type: string
+                  enum: [technical, billing, general, feature_request]
+                  example: "technical"
+                priority:
+                  type: string
+                  enum: [low, medium, high, urgent]
+                  example: "medium"
+      responses:
+        '201':
+          description: Ticket créé avec succès
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Ticket'
+  
+  /api/support/tickets/{ticketId}:
+    get:
+      tags:
+        - Support
+      summary: Détails d'un ticket
+      description: Récupérer les détails d'un ticket spécifique
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          description: ID du ticket
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Détails du ticket
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Ticket'
+        '404':
+          description: Ticket non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Chat Support
+  /api/chat-support/sessions:
+    get:
+      tags:
+        - Chat Support
+      summary: Sessions de chat de l'utilisateur
+      description: Récupérer toutes les sessions de chat de l'utilisateur connecté
+      responses:
+        '200':
+          description: Liste des sessions de chat
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChatSession'
+    
+    post:
+      tags:
+        - Chat Support
+      summary: Démarrer une nouvelle session de chat
+      description: Créer une nouvelle session de chat support
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                initialMessage:
+                  type: string
+                  example: "Bonjour, j'ai besoin d'aide"
+                category:
+                  type: string
+                  enum: [technical, billing, general]
+                  example: "technical"
+      responses:
+        '201':
+          description: Session de chat créée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChatSession'
+  
+  # Organisations
+  /api/organizations:
+    get:
+      tags:
+        - Organisations
+      summary: Liste des organisations
+      description: Récupérer la liste des organisations (admin uniquement)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Liste des organisations
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Organization'
+        '403':
+          description: Accès refusé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/organizations/{orgId}:
+    get:
+      tags:
+        - Organisations
+      summary: Détails d'une organisation
+      description: Récupérer les détails d'une organisation
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: ID de l'organisation
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Détails de l'organisation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Organization'
+        '404':
+          description: Organisation non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Analytics
+  /api/analytics/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Données du tableau de bord
+      description: Récupérer les métriques principales pour le tableau de bord
+      parameters:
+        - name: period
+          in: query
+          description: Période d'analyse
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, 1y]
+            default: 30d
+      responses:
+        '200':
+          description: Données du tableau de bord
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          totalUsers:
+                            type: integer
+                            example: 1250
+                          activeUsers:
+                            type: integer
+                            example: 890
+                          totalRevenue:
+                            type: number
+                            example: 45678.90
+                          conversionRate:
+                            type: number
+                            example: 3.2
+                          topAgents:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                  example: "Agent Contenu"
+                                usage:
+                                  type: integer
+                                  example: 1234
+  
+  # Paiements
+  /api/payment/plans:
+    get:
+      tags:
+        - Paiements
+      summary: Plans disponibles
+      description: Récupérer la liste des plans d'abonnement disponibles
+      security: []
+      responses:
+        '200':
+          description: Liste des plans
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "plan_starter"
+                            name:
+                              type: string
+                              example: "Starter"
+                            price:
+                              type: number
+                              example: 29.99
+                            currency:
+                              type: string
+                              example: "EUR"
+                            interval:
+                              type: string
+                              enum: [month, year]
+                              example: "month"
+                            features:
+                              type: array
+                              items:
+                                type: string
+                              example: ["5 agents IA", "1000 requêtes/mois", "Support email"]
+  
+  /api/payment/subscribe:
+    post:
+      tags:
+        - Paiements
+      summary: S'abonner à un plan
+      description: Créer un abonnement à un plan spécifique
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planId
+                - paymentMethodId
+              properties:
+                planId:
+                  type: string
+                  example: "plan_starter"
+                paymentMethodId:
+                  type: string
+                  example: "pm_1234567890"
+      responses:
+        '200':
+          description: Abonnement créé avec succès
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          subscriptionId:
+                            type: string
+                            example: "sub_1234567890"
+                          status:
+                            type: string
+                            example: "active"
+  
+  # Administration
+  /api/admin/users:
+    get:
+      tags:
+        - Administration
+      summary: Liste des utilisateurs (Admin)
+      description: Récupérer la liste de tous les utilisateurs (admin uniquement)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Numéro de page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: search
+          in: query
+          description: Recherche par email ou nom
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des utilisateurs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          users:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/User'
+                          pagination:
+                            type: object
+                            properties:
+                              page:
+                                type: integer
+                              limit:
+                                type: integer
+                              total:
+                                type: integer
+                              pages:
+                                type: integer
+        '403':
+          description: Accès refusé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Santé du système
+  /health:
+    get:
+      tags:
+        - Système
+      summary: État de santé du système
+      description: Vérifier l'état de santé de l'API Gateway et des services connectés
+      security: []
+      responses:
+        '200':
+          description: Système en bonne santé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  services:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                        example: "connected"
+                      redis:
+                        type: string
+                        example: "connected"
+                      agents:
+                        type: object
+                        properties:
+                          sav:
+                            type: string
+                            example: "online"
+                          publicite:
+                            type: string
+                            example: "online"
+                          contenu:
+                            type: string
+                            example: "online"
+                          analyse:
+                            type: string
+                            example: "online"
+                          pages:
+                            type: string
+                            example: "online"
+                          email:
+                            type: string
+                            example: "online"
+        '503':
+          description: Service indisponible
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "unhealthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  errors:
+                    type: array
+                    items:
+                      type: string
+  
+  /metrics:
+    get:
+      tags:
+        - Système
+      summary: Métriques Prometheus
+      description: Endpoint pour les métriques Prometheus
+      security: []
+      responses:
+        '200':
+          description: Métriques au format Prometheus
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  # HELP api_requests_total Total number of API requests
+                  # TYPE api_requests_total counter
+                  api_requests_total{method="GET",route="/health"} 1234
+
+tags:
+  - name: Authentification
+    description: Gestion de l'authentification et des sessions utilisateur
+  - name: Support
+    description: Système de tickets de support client
+  - name: Chat Support
+    description: Chat support en temps réel
+  - name: Organisations
+    description: Gestion des organisations et entreprises
+  - name: Analytics
+    description: Métriques et analyses de performance
+  - name: Paiements
+    description: Gestion des abonnements et paiements
+  - name: Administration
+    description: Fonctionnalités d'administration (admin uniquement)
+  - name: Système
+    description: Santé du système et métriques
+
+externalDocs:
+  description: Documentation technique complète
+  url: https://docs.commerceai-pro.com

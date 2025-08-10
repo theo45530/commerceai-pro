@@ -1,0 +1,297 @@
+
+services:
+  # Database Services
+  mongodb:
+    image: mongo:7.0
+    container_name: commerceai-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: commerceai2024
+      MONGO_INITDB_DATABASE: commerceai
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongodb/init:/docker-entrypoint-initdb.d
+    networks:
+      - commerceai-network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: commerceai-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass commerceai2024
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - commerceai-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: commerceai-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: commerceai2024
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - commerceai-network
+
+  # Core Services
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: commerceai-api-gateway
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - MONGODB_URI=mongodb://admin:commerceai2024@mongodb:27017/commerceai?authSource=admin
+      - REDIS_URL=redis://:commerceai2024@redis:6379
+      - RABBITMQ_URL=amqp://admin:commerceai2024@rabbitmq:5672
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+
+  platform-connectors:
+    build:
+      context: ./platform-connectors
+      dockerfile: Dockerfile
+    container_name: commerceai-platform-connectors
+    restart: unless-stopped
+    ports:
+      - "4001:4001"
+    environment:
+      - NODE_ENV=production
+      - PORT=4001
+      - MONGODB_URI=mongodb://admin:commerceai2024@mongodb:27017/commerceai?authSource=admin
+      - REDIS_URL=redis://:commerceai2024@redis:6379
+      - RABBITMQ_URL=amqp://admin:commerceai2024@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+
+  # AI Agents
+  agent-sav:
+    build:
+      context: ./agents/sav
+      dockerfile: Dockerfile
+    container_name: commerceai-agent-sav
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=production
+      - PORT=5001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=mongodb://admin:commerceai2024@mongodb:27017/commerceai?authSource=admin
+      - REDIS_URL=redis://:commerceai2024@redis:6379
+      - RABBITMQ_URL=amqp://admin:commerceai2024@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+
+  agent-publicite:
+    build:
+      context: ./agents/publicite
+      dockerfile: Dockerfile
+    container_name: commerceai-agent-publicite
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+    environment:
+      - PYTHONPATH=/app
+      - PORT=5002
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=mongodb://admin:commerceai2024@mongodb:27017/commerceai?authSource=admin
+      - REDIS_URL=redis://:commerceai2024@redis:6379
+      - RABBITMQ_URL=amqp://admin:commerceai2024@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+
+  agent-contenu:
+    build:
+      context: ./agents/contenu
+      dockerfile: Dockerfile
+    container_name: commerceai-agent-contenu
+    restart: unless-stopped
+    ports:
+      - "5003:5003"
+    environment:
+      - PYTHONPATH=/app
+      - PORT=5003
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=mongodb://admin:commerceai2024@mongodb:27017/commerceai?authSource=admin
+      - REDIS_URL=redis://:commerceai2024@redis:6379
+      - RABBITMQ_URL=amqp://admin:commerceai2024@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+
+  agent-analyse:
+    build:
+      context: ./agents/analyse
+      dockerfile: Dockerfile
+    container_name: commerceai-agent-analyse
+    restart: unless-stopped
+    ports:
+      - "5004:5004"
+    environment:
+      - PYTHONPATH=/app
+      - PORT=5004
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=mongodb://admin:commerceai2024@mongodb:27017/commerceai?authSource=admin
+      - REDIS_URL=redis://:commerceai2024@redis:6379
+      - RABBITMQ_URL=amqp://admin:commerceai2024@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+
+  agent-pages:
+    build:
+      context: ./agents/pages
+      dockerfile: Dockerfile
+    container_name: commerceai-agent-pages
+    restart: unless-stopped
+    ports:
+      - "5005:5005"
+    environment:
+      - PYTHONPATH=/app
+      - PORT=5005
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=mongodb://admin:commerceai2024@mongodb:27017/commerceai?authSource=admin
+      - REDIS_URL=redis://:commerceai2024@redis:6379
+      - RABBITMQ_URL=amqp://admin:commerceai2024@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+      - ./agents/pages/templates:/app/templates
+      - ./agents/pages/static:/app/static
+      - ./agents/pages/generated:/app/generated
+
+  agent-email:
+    build:
+      context: ./agents/email
+      dockerfile: Dockerfile
+    container_name: commerceai-agent-email
+    restart: unless-stopped
+    ports:
+      - "5006:5006"
+    environment:
+      - NODE_ENV=production
+      - PORT=5006
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=mongodb://admin:commerceai2024@mongodb:27017/commerceai?authSource=admin
+      - REDIS_URL=redis://:commerceai2024@redis:6379
+      - RABBITMQ_URL=amqp://admin:commerceai2024@rabbitmq:5672
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+      - ./agents/email/templates:/app/templates
+
+  # Monitoring Services
+  health-monitor:
+    build:
+      context: ./monitoring
+      dockerfile: Dockerfile
+    container_name: commerceai-health-monitor
+    restart: unless-stopped
+    ports:
+      - "4002:4002"
+    environment:
+      - NODE_ENV=production
+      - MONITOR_PORT=4002
+    depends_on:
+      - api-gateway
+      - platform-connectors
+    networks:
+      - commerceai-network
+    volumes:
+      - ./logs:/app/logs
+
+  # Frontend (for production)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: commerceai-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:4000
+    depends_on:
+      - api-gateway
+    networks:
+      - commerceai-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+
+networks:
+  commerceai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

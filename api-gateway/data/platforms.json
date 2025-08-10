@@ -1,0 +1,46 @@
+{
+  "instagram": {
+    "platform": "instagram",
+    "platformName": "Instagram",
+    "accountName": "Compte Démo Instagram",
+    "accountId": "demo_instagram_1754832326031",
+    "accessToken": "demo_token_instagram_1754832326031",
+    "refreshToken": "demo_refresh_instagram_1754832326031",
+    "expiresAt": "2025-08-10T14:25:26.031Z",
+    "connectedAt": "2025-08-10T13:25:26.031Z",
+    "status": "connected"
+  },
+  "meta": {
+    "platform": "meta",
+    "platformName": "Meta Ads",
+    "accountName": "Compte Démo Meta Ads",
+    "accountId": "demo_meta_1754832270367",
+    "accessToken": "demo_token_meta_1754832270367",
+    "refreshToken": "demo_refresh_meta_1754832270367",
+    "expiresAt": "2025-08-10T14:24:30.367Z",
+    "connectedAt": "2025-08-10T13:24:30.367Z",
+    "status": "connected"
+  },
+  "shopify": {
+    "platform": "shopify",
+    "platformName": "Shopify",
+    "accountName": "Compte Démo Shopify",
+    "accountId": "demo_shopify_1754774507491",
+    "accessToken": "demo_token_shopify_1754774507491",
+    "refreshToken": "demo_refresh_shopify_1754774507491",
+    "expiresAt": "2025-08-09T22:21:47.491Z",
+    "connectedAt": "2025-08-09T21:21:47.491Z",
+    "status": "connected"
+  },
+  "tiktok": {
+    "platform": "tiktok",
+    "platformName": "TikTok",
+    "accountName": "Compte Démo TikTok",
+    "accountId": "demo_tiktok_1754832335232",
+    "accessToken": "demo_token_tiktok_1754832335232",
+    "refreshToken": "demo_refresh_tiktok_1754832335232",
+    "expiresAt": "2025-08-10T14:25:35.232Z",
+    "connectedAt": "2025-08-10T13:25:35.232Z",
+    "status": "connected"
+  }
+}

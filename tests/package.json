@@ -1,0 +1,50 @@
+{
+  "name": "commerceai-integration-tests",
+  "version": "1.0.0",
+  "description": "Integration tests suite for CommerceAI Pro platform",
+  "main": "integration-tests.js",
+  "scripts": {
+    "test": "mocha --timeout 30000 --recursive",
+    "test:security": "mocha security-tests.js --timeout 30000",
+    "test:agents": "mocha agent-tests.js --timeout 30000",
+    "test:integration": "mocha integration-tests.js --timeout 60000",
+    "test:performance": "mocha performance-tests.js --timeout 120000",
+    "test:health": "node integration-tests.js --grep health",
+    "test:api": "node integration-tests.js --grep api",
+    "test:watch": "mocha --watch --timeout 30000 --recursive",
+    "test:coverage": "nyc mocha --timeout 30000 --recursive",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "chai": "^4.3.10",
+    "winston": "^3.11.0",
+    "mocha": "^10.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "nyc": "^15.1.0",
+    "eslint": "^8.54.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "supertest": "^6.3.3",
+    "sinon": "^17.0.1",
+    "faker": "^6.6.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "testing",
+    "integration",
+    "api-testing",
+    "commerceai"
+  ],
+  "author": "CommerceAI Pro Team",
+  "license": "MIT"
+}

@@ -1,0 +1,36 @@
+{
+  "name": "platform-connectors",
+  "version": "1.0.0",
+  "description": "Platform connectors for integrating with external services",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "google-ads-api": "^14.0.0",
+    "googleapis": "^128.0.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "mongoose": "^7.6.3",
+    "redis": "^4.6.10",
+    "amqplib": "^0.10.3",
+    "winston": "^3.11.0",
+    "morgan": "^1.10.0",
+    "body-parser": "^1.20.2",
+    "facebook-nodejs-business-sdk": "^19.0.0",
+    "twitter-api-v2": "^1.15.0",
+    "shopify-api-node": "^3.12.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "private": true
+}

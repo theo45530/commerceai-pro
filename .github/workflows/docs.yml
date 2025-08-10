@@ -1,0 +1,247 @@
+name: API Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'api-gateway/swagger.yaml'
+      - 'api-gateway/swagger-server.js'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'api-gateway/swagger.yaml'
+      - 'api-gateway/swagger-server.js'
+  workflow_dispatch:
+
+jobs:
+  # Validation de la documentation OpenAPI
+  validate-openapi:
+    name: Validate OpenAPI Specification
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install OpenAPI tools
+      run: |
+        npm install -g @apidevtools/swagger-parser
+        npm install -g redoc-cli
+        
+    - name: Validate OpenAPI specification
+      run: |
+        swagger-parser validate api-gateway/swagger.yaml
+        
+    - name: Generate ReDoc documentation
+      run: |
+        redoc-cli build api-gateway/swagger.yaml --output docs/index.html --title "CommerceAI Pro API Documentation"
+        
+    - name: Upload documentation artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-documentation
+        path: docs/
+
+  # Déploiement de la documentation
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: validate-openapi
+    if: github.ref == 'refs/heads/main'
+    
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      working-directory: api-gateway
+      run: |
+        npm install swagger-ui-express yamljs
+        
+    - name: Generate documentation site
+      run: |
+        mkdir -p docs
+        
+        # Générer ReDoc
+        npm install -g redoc-cli
+        redoc-cli build api-gateway/swagger.yaml --output docs/redoc.html --title "CommerceAI Pro API Documentation"
+        
+        # Créer une page d'accueil
+        cat > docs/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>CommerceAI Pro - Documentation API</title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .container {
+                    background: white;
+                    border-radius: 20px;
+                    padding: 3rem;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                    text-align: center;
+                    max-width: 600px;
+                    margin: 2rem;
+                }
+                .logo {
+                    font-size: 3rem;
+                    margin-bottom: 1rem;
+                }
+                h1 {
+                    color: #2d3748;
+                    margin-bottom: 1rem;
+                    font-size: 2.5rem;
+                }
+                .subtitle {
+                    color: #718096;
+                    margin-bottom: 2rem;
+                    font-size: 1.2rem;
+                }
+                .docs-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1.5rem;
+                    margin-top: 2rem;
+                }
+                .doc-card {
+                    background: #f7fafc;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                    text-decoration: none;
+                    color: #2d3748;
+                    transition: all 0.3s ease;
+                }
+                .doc-card:hover {
+                    border-color: #667eea;
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+                }
+                .doc-icon {
+                    font-size: 2rem;
+                    margin-bottom: 0.5rem;
+                }
+                .doc-title {
+                    font-weight: 600;
+                    margin-bottom: 0.5rem;
+                }
+                .doc-desc {
+                    font-size: 0.9rem;
+                    color: #718096;
+                }
+                .version {
+                    background: #667eea;
+                    color: white;
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 20px;
+                    font-size: 0.8rem;
+                    display: inline-block;
+                    margin-top: 1rem;
+                }
+                @media (max-width: 768px) {
+                    .docs-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    .container {
+                        margin: 1rem;
+                        padding: 2rem;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo">🚀</div>
+                <h1>CommerceAI Pro</h1>
+                <div class="subtitle">Documentation API Complète</div>
+                
+                <div class="docs-grid">
+                    <a href="redoc.html" class="doc-card">
+                        <div class="doc-icon">📚</div>
+                        <div class="doc-title">ReDoc</div>
+                        <div class="doc-desc">Documentation interactive et détaillée</div>
+                    </a>
+                    
+                    <a href="swagger.yaml" class="doc-card">
+                        <div class="doc-icon">📄</div>
+                        <div class="doc-title">OpenAPI Spec</div>
+                        <div class="doc-desc">Spécification YAML brute</div>
+                    </a>
+                </div>
+                
+                <div class="version">Version 1.0.0</div>
+            </div>
+        </body>
+        </html>
+        EOF
+        
+        # Copier le fichier swagger.yaml
+        cp api-gateway/swagger.yaml docs/
+        
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+      
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: docs/
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
+
+  # Test de la documentation déployée
+  test-docs:
+    name: Test Documentation
+    runs-on: ubuntu-latest
+    needs: deploy-docs
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Test documentation accessibility
+      run: |
+        # Attendre que la documentation soit déployée
+        sleep 30
+        
+        # Tester l'accessibilité de la documentation
+        curl -f "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" || echo "Documentation not yet available"
+        
+    - name: Notify documentation update
+      uses: 8398a7/action-slack@v3
+      if: success()
+      with:
+        status: success
+        text: '📚 Documentation API mise à jour: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
