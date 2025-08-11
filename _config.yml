@@ -1,0 +1,40 @@
+# Configuration GitHub Pages pour CommerceAI Pro
+title: CommerceAI Pro
+description: Plateforme SaaS d'Intelligence Artificielle pour le Commerce
+url: "https://theo45530.github.io"
+baseurl: "/commerceai-pro"
+
+# Thème GitHub Pages
+theme: minima
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# Exclusions
+exclude:
+  - node_modules/
+  - .git/
+  - .github/
+  - docker-compose*.yml
+  - Dockerfile
+  - "*.md"
+  - package*.json
+  - .env*
+
+# Inclusions spécifiques
+include:
+  - .nojekyll
+
+# Configuration markdown
+markdown: kramdown
+highlighter: rouge
+
+# Paramètres SEO
+lang: fr
+author: CommerceAI Pro Team
+
+# Navigation
+header_pages:
+  - index.html
