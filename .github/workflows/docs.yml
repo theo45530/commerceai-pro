@@ -14,6 +14,17 @@ on:
       - 'api-gateway/swagger-server.js'
   workflow_dispatch:
 
+# Permissions nécessaires pour GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Concurrence pour éviter les déploiements simultanés
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   # Validation de la documentation OpenAPI
   validate-openapi:

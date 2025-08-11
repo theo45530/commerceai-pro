@@ -422,45 +422,14 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  # Génération et déploiement de la documentation
-  deploy-docs:
-    name: Deploy API Documentation
-    runs-on: ubuntu-latest
-    needs: [test]
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        
-    - name: Install dependencies
-      working-directory: api-gateway
-      run: npm ci
-      
-    - name: Generate API documentation
-      working-directory: api-gateway
-      run: |
-        # Démarrer le serveur de documentation
-        npm run docs:build || echo "No docs build script, using existing files"
-        
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./api-gateway/docs
-        cname: docs.commerceai-pro.com
+  # Note: La documentation est déployée via le workflow docs.yml séparé
 
   # Nettoyage des anciennes images
   cleanup:
     name: Cleanup Old Images
     runs-on: ubuntu-latest
     needs: [deploy-production]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && success()
     
     steps:
     - name: Delete old container images
